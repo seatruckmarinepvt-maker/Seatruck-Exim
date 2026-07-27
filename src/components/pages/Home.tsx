@@ -1,0 +1,581 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { 
+  ShieldCheck, 
+  Globe, 
+  ArrowRight, 
+  Compass, 
+  Users, 
+  Scale, 
+  Settings, 
+  Layers,
+  HeartHandshake
+} from 'lucide-react';
+import { Language } from '../../types';
+
+import { ASSET_HEROES, ASSET_PRODUCTS, handleImageError } from '../../utils/imageUtils';
+
+interface HomeProps {
+  lang: Language;
+  onNavigate: (page: string, params?: Record<string, string>) => void;
+}
+
+// Custom Counter component for smooth loading
+function AnimatedCounter({ value, label }: { value: string; label: string }) {
+  const [count, setCount] = useState(0);
+  const numericValue = parseInt(value.replace(/\D/g, '')) || 0;
+  const suffix = value.replace(/[0-9]/g, '');
+
+  useEffect(() => {
+    let start = 0;
+    const end = numericValue;
+    if (end === 0) return;
+    const duration = 1500;
+    const stepTime = Math.abs(Math.floor(duration / end));
+    
+    const timer = setInterval(() => {
+      start += Math.ceil(end / 40);
+      if (start >= end) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(start);
+      }
+    }, Math.max(stepTime, 25));
+
+    return () => clearInterval(timer);
+  }, [numericValue]);
+
+  return (
+    <div className="p-6 bg-white/60 backdrop-blur-md border border-slate-150/80 rounded-2xl shadow-sm text-center">
+      <span className="block font-display font-extrabold text-3xl sm:text-4xl text-brand-forest">
+        {count}{suffix}
+      </span>
+      <span className="block text-[11px] font-mono font-bold text-slate-500 uppercase tracking-widest mt-1.5">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+const LOCALIZED_CONTENT: Record<Language, Record<string, string>> = {
+  en: {
+    badge: "GLOBAL EXIM SERVICES",
+    title1: "Global Trade.",
+    title2: "Trusted Partnerships.",
+    title3: "Sustainable Growth.",
+    desc: "Seatruck Exim Services stands as a premium gateway for global trade coordination and supply security. We specialize in the flawless procurement, logistics, and quality assurance of high-grade agro-commodities and industrial raw materials for elite markets worldwide.",
+    btn_quote: "Request a Quote",
+    btn_products: "View Products",
+    counter_countries: "Countries Served",
+    counter_products: "Products Exported",
+    counter_partners: "Business Partners",
+    counter_clients: "Satisfied Clients",
+    h1_title: "Global Trade",
+    h1_desc: "Expansive commercial reach connecting primary growers with destination hubs.",
+    h2_title: "Worldwide Procurement",
+    h2_desc: "Direct integration at farm gates to lock in quality grades and crop volume.",
+    h3_title: "Reliable Supply Chain",
+    h3_desc: "Meticulous coordination of packing, freight, custom clearing, and delivery.",
+    h4_title: "Certified Products",
+    h4_desc: "Rigorous laboratory analysis and pre-shipment certificates by SGS.",
+    sectors_badge: "INDUSTRY SECTORS",
+    sectors_title: "Solutions for Every Core Industry",
+    sector_agri_title: "Agriculture",
+    sector_agri_desc: "High-purity grains, export-grade wheat, and pulses managed under rigorous storage guidelines.",
+    sector_food_title: "Food Products",
+    sector_food_desc: "Premium cashew nuts, premium almonds, and aromatic spices ready for private label distribution.",
+    sector_ind_title: "Industrial Materials",
+    sector_ind_desc: "Bulk trade supply of raw minerals, industrial chemicals, and custom manufacturing ingredients.",
+    sector_retail_title: "Consumer Goods",
+    sector_retail_desc: "Flexible logistics solutions and custom product packaging tailored for retail distribution networks.",
+    explore_btn: "Explore Range",
+    ops_badge: "OPERATIONAL CONSISTENCY",
+    why_title: "Why Choose Us as Your Trade Ally?",
+    why_desc: "We believe international exim partnerships thrive on predictability, absolute quality compliance, and rigorous logistics transparency. Our team manages your bulk contracts with corporate precision and ethical responsibility.",
+    ethical_title: "Ethical Business Standard",
+    ethical_desc: "Securing equitable supply contracts directly with localized agricultural producers and processing units.",
+    cta_badge: "BULK COMMERCIAL CONTRACTS",
+    cta_title: "Partner With Seatruck Exim Services",
+    cta_desc: "Coordinate bulk export volumes, destination port requirements, private label packaging, and international trade lines directly with our exim specialists.",
+    cta_btn_connect: "Let's Connect",
+    cta_btn_services: "View Services"
+  },
+  es: {
+    badge: "SERVICIOS EXIM GLOBALES",
+    title1: "Comercio Global.",
+    title2: "Alianzas de Confianza.",
+    title3: "Crecimiento Sostenible.",
+    desc: "Seatruck Exim Services es un líder global en comercio internacional y logística de suministro. Facilitamos la importación y exportación de materias primas agrícolas de alta calidad y materiales industriales mediante una gestión de aduanas, fletes y control de calidad.",
+    btn_quote: "Solicitar una Cotización",
+    btn_products: "Ver Productos",
+    counter_countries: "Países Atendidos",
+    counter_products: "Productos Exportados",
+    counter_partners: "Socios Comerciales",
+    counter_clients: "Clientes Satisfechos",
+    h1_title: "Comercio Global",
+    h1_desc: "Presencia en los principales puertos y mercados internacionales de origen.",
+    h2_title: "Abastecimiento Mundial",
+    h2_desc: "Relaciones directas con productores que garantizan pureza y trazabilidad.",
+    h3_title: "Cadena Suministro Segura",
+    h3_desc: "Sincronización logística óptima desde la cosecha hasta la entrega final.",
+    h4_title: "Productos Certificados",
+    h4_desc: "Cumplimiento estricto de estándares internacionales fitosanitarios.",
+    sectors_badge: "SOLUCIONES INDUSTRIALES",
+    sectors_title: "Soluciones para Cada Sector Comercial",
+    sector_agri_title: "Agricultura",
+    sector_agri_desc: "Granos premium, trigo de molienda y legumbres seleccionadas para el consumo internacional.",
+    sector_food_title: "Alimentos Procesados",
+    sector_food_desc: "Frutos secos, nueces seleccionadas y especias aromáticas envasadas en bolsas de grado alimenticio.",
+    sector_ind_title: "Materiales Industriales",
+    sector_ind_desc: "Adquisición a granel de minerales crudos y químicos industriales que alimentan manufacturas globales.",
+    sector_retail_title: "Bienes de Consumo",
+    sector_retail_desc: "Suministro constante y empaques flexibles optimizados para retail y cadenas de distribución global.",
+    explore_btn: "Explorar Catálogo",
+    ops_badge: "FILOSOFÍA DE OPERACIONES",
+    why_title: "¿Por Qué Elegir Seatruck?",
+    why_desc: "Entendemos que la credibilidad en el comercio exterior no depende de reclamos temporales, sino de consistencia operativa a largo plazo. Ofrecemos a nuestros compradores globales un servicio predecible y transparente respaldado por profesionales especializados.",
+    ethical_title: "Compromiso de Sostenibilidad",
+    ethical_desc: "Garantizamos precios justos a cooperativas locales y fomentamos métodos de cultivo respetuosos con el medio ambiente.",
+    cta_badge: "GESTIÓN DE CONTRATOS BULK",
+    cta_title: "Socio en Comercio Internacional de Confianza",
+    cta_desc: "Coordine volúmenes de exportación, certificaciones específicas de puerto de destino, marcas de marca propia y cartas de crédito directamente con nuestros especialistas de cuenta.",
+    cta_btn_connect: "Iniciar Consulta Comercial",
+    cta_btn_services: "Ver Nuestros Servicios"
+  },
+  ar: {
+    badge: "خدمات الاستيراد والتصدير العالمية",
+    title1: "التجارة العالمية.",
+    title2: "شراكات موثوقة.",
+    title3: "نمو مستدام.",
+    desc: "تقف شركة Seatruck Exim Services كبوابة متميزة لتنسيق التجارة العالمية وأمن الإمدادات. نحن متخصصون في عمليات الشراء والخدمات اللوجستية وضمان الجودة الخالية من العيوب للسلع الزراعية والمواد الخام الصناعية عالية الجودة للأسواق العالمية النخبة.",
+    btn_quote: "طلب اقتباس",
+    btn_products: "عرض المنتجات",
+    counter_countries: "البلدان المخدومة",
+    counter_products: "المنتجات المصدرة",
+    counter_partners: "شركاء الأعمال",
+    counter_clients: "العملاء الراضون",
+    h1_title: "التجارة العالمية",
+    h1_desc: "نطاق تجاري واسع يربط المنتجين الرئيسيين بمراكز الوجهة.",
+    h2_title: "المشتريات العالمية",
+    h2_desc: "تكامل مباشر مع المزارعين لضمان درجات الجودة وحجم المحصول.",
+    h3_title: "سلسلة إمداد موثوقة",
+    h3_desc: "تنسيق دقيق للتعبئة والشحن والتخليص الجمركي والتسليم.",
+    h4_title: "منتجات معتمدة",
+    h4_desc: "تحليل مخبري صارم وشهادات ما قبل الشحن من SGS.",
+    sectors_badge: "القطاعات الصناعية",
+    sectors_title: "حلول لكل صناعة رئيسية",
+    sector_agri_title: "الزراعة",
+    sector_agri_desc: "حبوب عالية النقاء، قمح من درجة التصدير، وبقوليات تدار بموجب إرشادات تخزين صارمة.",
+    sector_food_title: "المنتجات الغذائية",
+    sector_food_desc: "كاجو فاخر، لوز ممتاز، وتوابل عطرية جاهزة للتوزيع الخاص.",
+    sector_ind_title: "المواد الصناعية",
+    sector_ind_desc: "توريد السلع بالجملة من المعادن الخام، والمواد الكيميائية الصناعية، ومكونات التصنيع المخصصة.",
+    sector_retail_title: "السلع الاستهلاكية",
+    sector_retail_desc: "حلول لوجستية مرنة وتعبئة وتغليف منتجات مخصصة لشبكات التوزيع.",
+    explore_btn: "استكشاف النطاق",
+    ops_badge: "الاتساق التشغيلي",
+    why_title: "لماذا تختارنا كحليف تجاري؟",
+    why_desc: "نحن نؤمن بأن شراكات الاستيراد والتصدير الدولية تزدهر بالقدرة على التنبؤ، والامتثال المطلق للجودة، والشفافية اللوجستية الصارمة. يدير فريقنا عقودك الضخمة بدقة ومسؤولية أخلاقية.",
+    ethical_title: "معيار العمل الأخلاقي",
+    ethical_desc: "تأمين عقود توريد عادلة مباشرة مع المنتجين الزراعيين المحليين ووحدات المعالجة.",
+    cta_badge: "العقود التجارية الكبيرة",
+    cta_title: "شريك مع خدمات سيتراك للتصدير والاستيراد",
+    cta_desc: "نسق حجم الصادرات الكبيرة، متطلبات ميناء الوجهة، التغليف الخاص، وخطوط التجارة الدولية مباشرة مع أخصائيينا.",
+    cta_btn_connect: "دعنا نتواصل",
+    cta_btn_services: "عرض الخدمات"
+  },
+  hi: {
+    badge: "वैश्विक आयात-निर्यात सेवाएं",
+    title1: "वैश्विक व्यापार।",
+    title2: "विश्वसनीय भागीदारी।",
+    title3: "सतत विकास।",
+    desc: "सीट्रक एक्जिम सर्विसेज वैश्विक व्यापार समन्वय और आपूर्ति सुरक्षा के लिए एक प्रीमियम प्रवेश द्वार के रूप में खड़ी है। हम दुनिया भर के विशिष्ट बाजारों के लिए उच्च श्रेणी की कृषि-वस्तुओं और औद्योगिक कच्चे माल की निर्दोष खरीद, रसद और गुणवत्ता आश्वासन में विशेषज्ञ हैं।",
+    btn_quote: "एक उद्धरण का अनुरोध करें",
+    btn_products: "उत्पाद देखें",
+    counter_countries: "देशों में सेवा",
+    counter_products: "निर्यातित उत्पाद",
+    counter_partners: "व्यापारिक भागीदार",
+    counter_clients: "संतुष्ट ग्राहक",
+    h1_title: "वैश्विक व्यापार",
+    h1_desc: "प्राथमिक उत्पादकों को गंतव्य केंद्रों से जोड़ने वाली व्यापक वाणिज्यिक पहुंच।",
+    h2_title: "विश्वव्यापी खरीद",
+    h2_desc: "गुणवत्ता ग्रेड और फसल की मात्रा सुनिश्चित करने के लिए खेतों से सीधा जुड़ाव।",
+    h3_title: "विश्वसनीय आपूर्ति श्रृंखला",
+    h3_desc: "पैकिंग, माल ढुलाई, सीमा शुल्क निकासी और वितरण का सूक्ष्म समन्वय।",
+    h4_title: "प्रमाणित उत्पाद",
+    h4_desc: "SGS द्वारा कड़े प्रयोगशाला विश्लेषण और पूर्व-शिपमेंट प्रमाण पत्र।",
+    sectors_badge: "औद्योगिक क्षेत्र",
+    sectors_title: "हर मुख्य उद्योग के लिए समाधान",
+    sector_agri_title: "कृषि",
+    sector_agri_desc: "कड़े भंडारण दिशानिर्देशों के तहत प्रबंधित उच्च शुद्धता वाले अनाज, निर्यात-ग्रेड गेहूं और दालें।",
+    sector_food_title: "खाद्य उत्पाद",
+    sector_food_desc: "प्रीमियम काजू, प्रीमियम बादाम और निजी लेबल वितरण के लिए तैयार सुगंधित मसाले।",
+    sector_ind_title: "औद्योगिक सामग्री",
+    sector_ind_desc: "कच्चे खनिजों, औद्योगिक रसायनों और कस्टम विनिर्माण सामग्री की थोक व्यापार आपूर्ति।",
+    sector_retail_title: "उपभोक्ता वस्तुएं",
+    sector_retail_desc: "खुदरा वितरण नेटवर्क के लिए तैयार लचीले रसद समाधान और कस्टम उत्पाद पैकेजिंग।",
+    explore_btn: "श्रेणी का अन्वेषण करें",
+    ops_badge: "परिचालन निरंतरता",
+    why_title: "व्यापार सहयोगी के रूप में हमें क्यों चुनें?",
+    why_desc: "हमारा मानना है कि अंतर्राष्ट्रीय एक्जिम साझेदारियां पूर्वानुमान, पूर्ण गुणवत्ता अनुपालन और कठोर रसद पारदर्शिता पर फलती-फूलती हैं। हमारी टीम आपके थोक अनुबंधों को कॉर्पोरेट सटीकता और नैतिक जिम्मेदारी के साथ प्रबंधित करती है।",
+    ethical_title: "नैतिक व्यापार मानक",
+    ethical_desc: "स्थानीयकृत कृषि उत्पादकों और प्रसंस्करण इकाइयों के साथ सीधे न्यायसंगत आपूर्ति अनुबंध सुरक्षित करना।",
+    cta_badge: "थोक वाणिज्यिक अनुबंध",
+    cta_title: "सीट्रक एक्जिम सर्विसेज के साथ साझेदारी करें",
+    cta_desc: "थोक निर्यात मात्रा, गंतव्य बंदरगाह आवश्यकताओं, निजी लेबल पैकेजिंग और अंतर्राष्ट्रीय व्यापार लाइनों का सीधे हमारे एक्जिम विशेषज्ञों के साथ समन्वय करें।",
+    cta_btn_connect: "आइए जुड़ें",
+    cta_btn_services: "सेवाएं देखें"
+  },
+  zh: {
+    badge: "全球进出口服务",
+    title1: "全球贸易。",
+    title2: "值得信赖的伙伴关系。",
+    title3: "可持续增长。",
+    desc: "Seatruck Exim Services 作为全球贸易协调和供应安全的优质门户。我们专注于为全球精英市场采购、物流和品质保证高档农产品和工业原材料。",
+    btn_quote: "请求报价",
+    btn_products: "查看产品",
+    counter_countries: "服务国家",
+    counter_products: "出口产品",
+    counter_partners: "商业伙伴",
+    counter_clients: "满意客户",
+    h1_title: "全球贸易",
+    h1_desc: "广泛的商业网络，连接主要种植者与目的地枢纽。",
+    h2_title: "全球采购",
+    h2_desc: "直接整合源头农场，锁定质量等级和作物产量。",
+    h3_title: "可靠供应链",
+    h3_desc: "包装、货运、报关和交货的细致协调。",
+    h4_title: "认证产品",
+    h4_desc: "SGS严格的实验室分析 and 装运前证书。",
+    sectors_badge: "工业领域",
+    sectors_title: "适用于每个核心行业的解决方案",
+    sector_agri_title: "农业",
+    sector_agri_desc: "在严格存储指南下管理的高纯度谷物、出口级小麦和豆类。",
+    sector_food_title: "食品产品",
+    sector_food_desc: "优质腰果、优质杏仁和香料，适合自主品牌分销。",
+    sector_ind_title: "工业材料",
+    sector_ind_desc: "大宗原料矿产、工业化学品和定制制造原料的贸易供应。",
+    sector_retail_title: "消费品",
+    sector_retail_desc: "为零售分销网络量身定制的灵活物流解决方案和定制包装。",
+    explore_btn: "探索系列",
+    ops_badge: "运营一致性",
+    why_title: "为什么选择我们作为贸易盟友？",
+    why_desc: "我们相信，国际进出口伙伴关系依赖于可预测性、绝对的质量合规和严格的物流透明度。我们的团队以企业化精度和道德责任管理您的大宗合同。",
+    ethical_title: "道德商业标准",
+    ethical_desc: "直接与当地农业生产者和加工单位签订公平的供应合同。",
+    cta_badge: "大宗商业合同",
+    cta_title: "与 Seatruck Exim Services 合作",
+    cta_desc: "直接与我们的进出口专家协调大宗出口量、目的地港口要求、自主品牌包装和国际贸易额度。",
+    cta_btn_connect: "联系我们",
+    cta_btn_services: "查看服务"
+  }
+};
+
+export default function Home({ lang, onNavigate }: HomeProps) {
+  const t = LOCALIZED_CONTENT[lang] || LOCALIZED_CONTENT.en;
+  const isRtl = lang === 'ar';
+
+  return (
+    <div id="home-root" className="bg-brand-warm-white text-slate-900 overflow-hidden font-sans">
+      
+      {/* ================= HERO SECTION (LARGE SPLIT HERO) ================= */}
+      <section className="relative min-h-[92vh] flex items-center pt-32 pb-20 text-white overflow-hidden">
+        {/* Background Image filling the entire section */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={ASSET_HEROES.home} 
+            alt="Seatruck Logistics and Port Terminal" 
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => handleImageError(e, 'hero')}
+          />
+          {/* Green color gradient overlay from left to right, fading completely on the right */}
+          <div className={`absolute inset-0 ${isRtl ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-brand-forest/75 via-brand-forest/30 to-transparent pointer-events-none`}></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 w-full z-10 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Content Column */}
+            <div className="lg:col-span-9 text-start space-y-6">
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight font-display text-white filter drop-shadow-[0_6px_16px_rgba(0,0,0,1)]">
+                {t.title1} <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-emerald-300 to-teal-100">
+                  {t.title2}
+                </span> <br />
+                {t.title3}
+              </h1>
+
+              <p className="text-white text-sm sm:text-base leading-relaxed max-w-2xl font-bold filter drop-shadow-[0_3px_8px_rgba(0,0,0,1)]">
+                {t.desc}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-4">
+                <button 
+                  onClick={() => onNavigate('contact')}
+                  className="bg-brand-emerald hover:bg-brand-emerald/90 text-white font-bold text-xs uppercase tracking-wider px-7 py-4 rounded-xl cursor-pointer shadow-md transition-all border border-brand-emerald hover:scale-[1.02]"
+                >
+                  {t.btn_quote}
+                </button>
+                <button 
+                  onClick={() => onNavigate('products')}
+                  className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-7 py-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02]"
+                >
+                  {t.btn_products}
+                </button>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+
+      {/* ================= COMPANY HIGHLIGHTS ================= */}
+      <section className="py-20 bg-white border-b border-slate-100 relative">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Globe,
+                title: t.h1_title,
+                desc: t.h1_desc
+              },
+              {
+                icon: Compass,
+                title: t.h2_title,
+                desc: t.h2_desc
+              },
+              {
+                icon: Layers,
+                title: t.h3_title,
+                desc: t.h3_desc
+              },
+              {
+                icon: ShieldCheck,
+                title: t.h4_title,
+                desc: t.h4_desc
+              }
+            ].map((highlight, idx) => {
+              const Icon = highlight.icon;
+              return (
+                <div key={idx} className="p-6 bg-brand-cream/40 border border-slate-150 rounded-2xl text-start space-y-3 shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-brand-forest/5 flex items-center justify-center text-brand-forest">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-xs font-bold text-brand-forest font-mono uppercase tracking-wider">{highlight.title}</h3>
+                  <p className="text-slate-500 text-[11px] leading-relaxed">{highlight.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Animated Counters Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-16 mt-16 border-t border-slate-100">
+            <AnimatedCounter value="60+" label={t.counter_countries} />
+            <AnimatedCounter value="40+" label={t.counter_products} />
+            <AnimatedCounter value="200+" label={t.counter_partners} />
+            <AnimatedCounter value="500+" label={t.counter_clients} />
+          </div>
+
+        </div>
+      </section>
+
+      {/* ================= INDUSTRY SOLUTIONS ================= */}
+      <section className="py-24 bg-brand-cream/30 border-b border-slate-150">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-[10px] font-bold font-mono text-brand-emerald uppercase tracking-widest block mb-2">
+              {t.sectors_badge}
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
+              {t.sectors_title}
+            </h2>
+            <div className="w-16 h-1 bg-brand-gold mx-auto mt-4 rounded-full"></div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                title: t.sector_agri_title,
+                desc: t.sector_agri_desc,
+                image: ASSET_PRODUCTS.wheat
+              },
+              {
+                title: t.sector_food_title,
+                desc: t.sector_food_desc,
+                image: ASSET_PRODUCTS.cashew
+              },
+              {
+                title: t.sector_ind_title,
+                desc: t.sector_ind_desc,
+                image: ASSET_HEROES.products
+              },
+              {
+                title: t.sector_retail_title,
+                desc: t.sector_retail_desc,
+                image: ASSET_HEROES.agroHarvest
+              }
+            ].map((sol, idx) => (
+              <div 
+                key={idx} 
+                className="group bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-xs hover:border-brand-emerald/40 hover:shadow-md transition-all duration-300 text-start flex flex-col justify-between"
+              >
+                <div>
+                  <div className="h-48 overflow-hidden relative">
+                    <img 
+                      src={sol.image} 
+                      alt={sol.title} 
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+                  </div>
+                  <div className="p-6 space-y-2">
+                    <h3 className="text-base font-bold text-brand-forest">{sol.title}</h3>
+                    <p className="text-slate-500 text-xs leading-relaxed">{sol.desc}</p>
+                  </div>
+                </div>
+                <div className="p-6 pt-0">
+                  <button 
+                    onClick={() => onNavigate('products')}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold font-mono text-brand-emerald hover:text-brand-forest uppercase tracking-wider group/btn cursor-pointer"
+                  >
+                    <span>{t.explore_btn}</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ================= WHY CHOOSE US ================= */}
+      <section className="py-24 bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            
+            {/* Left Narrative Column */}
+            <div className="lg:col-span-5 text-start space-y-5">
+              <span className="text-[10px] font-bold font-mono text-brand-emerald uppercase tracking-widest block">
+                {t.ops_badge}
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
+                {t.why_title}
+              </h2>
+              <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-medium">
+                {t.why_desc}
+              </p>
+              
+              <div className="p-5.5 bg-brand-cream border border-slate-150 rounded-2xl">
+                <div className="flex items-start gap-3.5 text-start">
+                  <HeartHandshake className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-brand-forest uppercase font-mono tracking-wider">
+                      {t.ethical_title}
+                    </h4>
+                    <p className="text-slate-500 text-[11px] leading-relaxed mt-1">
+                      {t.ethical_desc}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Interactive Features Grid */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                {
+                  icon: Globe,
+                  title: lang === 'es' ? "Red Internacional" : lang === 'ar' ? "شبكة دولية" : lang === 'hi' ? "अंतरराष्ट्रीय नेटवर्क" : lang === 'zh' ? "国际网络" : "International Network",
+                  desc: lang === 'es' ? "Acceso directo a cadenas de suministro certificadas en múltiples continentes." : lang === 'ar' ? "اتصالات قوية بخطوط الشحن الكبرى والموانئ ومراكز التصدير والاستيراد." : lang === 'hi' ? "प्रमुख शिपिंग लाइनों, कोल्ड-स्टोरेज पोर्ट्स और एक्जिम हब्स से मजबूत संपर्क।" : lang === 'zh' ? "与主要航运公司、冷链港口和进出口枢纽的稳固连接。" : "Robust connections to major shipping lines, cold-storage ports, and exim hubs."
+                },
+                {
+                  icon: Scale,
+                  title: lang === 'es' ? "Precios Competitivos" : lang === 'ar' ? "أسعار تنافسية" : lang === 'hi' ? "प्रतिस्पर्धी मूल्य निर्धारण" : lang === 'zh' ? "竞争性定价" : "Competitive Pricing",
+                  desc: lang === 'es' ? "Estructuras comerciales optimizadas que reducen costos de intermediación." : lang === 'ar' ? "مؤشرات تسعير شفافة مرتبطة مباشرة بالمعايير العالمية للسلع." : lang === 'hi' ? "वैश्विक वस्तु बेंचमार्क से जुड़े पारदर्शी मूल्य सूचकांक।" : lang === 'zh' ? "直接对应全球商品基准的透明定价指数。" : "Transparent pricing indexes directly mapped to global commodity benchmarks."
+                },
+                {
+                  icon: ShieldCheck,
+                  title: lang === 'es' ? "Garantía de Calidad" : lang === 'ar' ? "ضمان الجودة" : lang === 'hi' ? "गुणवत्ता आश्वासन" : lang === 'zh' ? "质量保证" : "Quality Assurance",
+                  desc: lang === 'es' ? "Inspecciones de laboratorio previas al embarque realizadas por terceros acreditados." : lang === 'ar' ? "فحوصات صحية نباتية متعددة المستويات ومطابقة متبقيات المبيدات." : lang === 'hi' ? "बहु-स्तरीय पादप स्वच्छता निरीक्षण और कीटनाशक अवशेष मिलान।" : lang === 'zh' ? "多级植物检疫检验和农药残留匹配。" : "Multi-tiered phytosanitary inspections and pesticide residuary matching."
+                },
+                {
+                  icon: Compass,
+                  title: lang === 'es' ? "Logística Confiable" : lang === 'ar' ? "خدمات لوجستية موثوقة" : lang === 'hi' ? "विश्वसनीय रसद" : lang === 'zh' ? "可靠物流" : "Reliable Logistics",
+                  desc: lang === 'es' ? "Embalajes seguros de grado alimenticio y tiempos de tránsito eficientes." : lang === 'ar' ? "تخصيص ناقلات مهنية، وحجز مساحات السفن، والامتثال الجمركي." : lang === 'hi' ? "पेशेवर वाहक आवंटन, पोत स्थान आरक्षण, और कस्टम अनुपालन।" : lang === 'zh' ? "专业的承运商分配、舱位预订和海关合规。" : "Professional carrier allocation, vessel space reservation, and custom compliance."
+                },
+                {
+                  icon: Users,
+                  title: lang === 'es' ? "Soporte Dedicado" : lang === 'ar' ? "دعم مخصص" : lang === 'hi' ? "समर्पित समर्थन" : lang === 'zh' ? "专属支持" : "Dedicated Support",
+                  desc: lang === 'es' ? "Un ejecutivo comercial bilingüe asignado a su cuenta para actualizaciones constantes." : lang === 'ar' ? "مسؤول مكتب تجاري مخصص يقدم تحديثات مستمرة لخط سير العمليات." : lang === 'hi' ? "लगातार परिचालन समयसीमा अपडेट प्रदान करने वाला आपका अपना नामित ट्रेडिंग डेस्क अधिकारी।" : lang === 'zh' ? "您专属的交易专员，提供持续的运营进度更新。" : "Your own designated trading desk officer providing constant operational timeline updates."
+                },
+                {
+                  icon: Settings,
+                  title: lang === 'es' ? "Empaque a Medida" : lang === 'ar' ? "تعبئة مرنة" : lang === 'hi' ? "लचीली पैकेजिंग" : lang === 'zh' ? "灵活包装" : "Flexible Packing",
+                  desc: lang === 'es' ? "Opciones de marcado personalizado y pesos adaptados a sus requerimientos." : lang === 'ar' ? "تكوينات تعبئة وتغليف مخصصة في أكياس PP، أو الخيش، أو المحكم الإغلاق لتناسب احتياجات السوق." : lang === 'hi' ? "बाजार की जरूरतों के अनुकूल पीपी, जूट, या वैक्यूम-सील्ड पैकेजिंग कॉन्फ़िगरेशन।" : lang === 'zh' ? "量身定制的聚丙烯（PP）、麻袋或真空密封包装配置，以适应市场需求。" : "Tailored PP, jute, or vacuum-sealed packaging configurations to suit market needs."
+                }
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div key={idx} className="p-5.5 bg-brand-cream/30 border border-slate-150 rounded-2xl text-start space-y-2">
+                    <div className="w-8 h-8 rounded-lg bg-brand-forest/5 flex items-center justify-center text-brand-emerald">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-xs font-bold text-slate-900 leading-snug">{item.title}</h3>
+                    <p className="text-slate-500 text-[11px] leading-relaxed">{item.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CALL TO ACTION ================= */}
+      <section className="py-24 bg-gradient-to-tr from-[#0b1713] to-brand-forest text-white text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-noise opacity-5"></div>
+        <div className="max-w-4xl mx-auto px-6 relative z-10 space-y-6">
+          <div className="inline-flex items-center gap-1.5 bg-brand-gold/10 border border-brand-gold/20 text-brand-gold font-mono text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+            <span>{t.cta_badge}</span>
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-display text-white">
+            {t.cta_title}
+          </h2>
+          <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed">
+            {t.cta_desc}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+            <button 
+              onClick={() => onNavigate('contact')}
+              className="bg-brand-emerald hover:bg-brand-emerald/90 text-white font-bold text-xs uppercase tracking-wider px-7 py-4 rounded-xl transition-all cursor-pointer hover:scale-[1.02]"
+            >
+              {t.cta_btn_connect}
+            </button>
+            <button 
+              onClick={() => onNavigate('services')}
+              className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-7 py-4 rounded-xl transition-all cursor-pointer"
+            >
+              {t.cta_btn_services}
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  );
+}
