@@ -69,11 +69,11 @@ export default function Navbar({ currentLang, onLanguageChange, activeSection, o
             onClick={() => handleLinkClick('home')}
             id="nav-logo"
           >
-            <div className="w-12 h-12 flex items-center justify-center shadow-sm group-hover:scale-[1.03] transition-transform duration-300 overflow-hidden rounded-xl bg-white">
+            <div className="h-12 w-auto min-w-[3rem] flex items-center justify-center shadow-sm group-hover:scale-[1.03] transition-transform duration-300 overflow-hidden rounded-xl bg-white p-1 shrink-0">
               <img 
                 src={ASSET_LOGOS.main} 
                 alt="SEATRUCK EXIM SERVICES Logo" 
-                className="w-full h-full object-cover" 
+                className="h-full w-auto object-contain" 
                 referrerPolicy="no-referrer"
                 onError={(e) => handleImageError(e, 'logo')}
               />
