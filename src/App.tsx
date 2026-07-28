@@ -274,12 +274,12 @@ export default function App() {
             {/* Brand details */}
             <div className="lg:col-span-5 space-y-6 text-start">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 flex items-center justify-center overflow-hidden shadow-md rounded-xl">
+                <div className="h-12 w-auto min-w-[3rem] flex items-center justify-center overflow-hidden shadow-md rounded-xl bg-white p-1 shrink-0">
                   <img 
                     src={ASSET_LOGOS.main} 
                     alt="SEATRUCK EXIM SERVICES Logo" 
                     loading="lazy"
-                    className="w-full h-full object-cover" 
+                    className="h-full w-auto object-contain" 
                     referrerPolicy="no-referrer"
                     onError={(e) => handleImageError(e, 'logo')}
                   />
@@ -289,7 +289,7 @@ export default function App() {
                     SEATRUCK EXIM SERVICES
                   </span>
                   <span className="text-[10px] tracking-wider text-emerald-400 font-bold block uppercase font-mono">
-                    Local to Global
+                    SEAWAYS TO ROADWAYS
                   </span>
                 </div>
               </div>
